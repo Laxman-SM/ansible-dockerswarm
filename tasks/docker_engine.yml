@@ -41,10 +41,15 @@
     state: present
   with_items: "{{ docker_dependencies }}"
 
-- name: Install the Docker Engine.
-  package:
-    name: docker-engine
-    state: present
+- name: Enable experimental mode.
+# TODO(dzimine):
+# - enable for other RHEL and Ubuntu 16
+# - make it a parameter
+  lineinfile:
+    insertafter: '^#DOCKER_OPTS'
+    dest: /etc/default/docker
+    line: DOCKER_OPTS="--experimental=true"
+  when: ansible_os_family == 'Debian'
 
 # Specified version because of https://github.com/ansible/ansible/issues/17495
 - name: Install docker-py 1.9.0 to fix Ansible issue 17495
@@ -66,5 +71,5 @@
 - name: Enable the Docker daemon as a service and start it.
   service:
     name: docker
-    state: started
+    state: restarted
     enabled: yes
