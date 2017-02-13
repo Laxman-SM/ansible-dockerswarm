@@ -41,15 +41,31 @@
     state: present
   with_items: "{{ docker_dependencies }}"
 
-- name: Enable experimental mode.
+- name: Install the Docker Engine.
+  package:
+    name: docker-engine
+    state: present
+
+# Enable experimental mode.
 # TODO(dzimine):
 # - enable for other RHEL and Ubuntu 16
-# - make it a parameter
+# /etc/systemd/system/docker.service.d/docker.conf
+
+- name: Enable experimental mode.
   lineinfile:
     insertafter: '^#DOCKER_OPTS'
     dest: /etc/default/docker
     line: DOCKER_OPTS="--experimental=true"
   when: ansible_os_family == 'Debian'
+    and enable_experimental_mode
+
+- name: Disable experimental mode.
+  lineinfile:
+    dest: /etc/default/docker
+    state: absent
+    line: DOCKER_OPTS="--experimental=true"
+  when: ansible_os_family == 'Debian'
+    and not enable_experimental_mode
 
 # Specified version because of https://github.com/ansible/ansible/issues/17495
 - name: Install docker-py 1.9.0 to fix Ansible issue 17495
