@@ -46,6 +46,27 @@
     name: docker-engine
     state: present
 
+# Enable experimental mode.
+# TODO(dzimine):
+# - enable for other RHEL and Ubuntu 16
+# /etc/systemd/system/docker.service.d/docker.conf
+
+- name: Enable experimental mode.
+  lineinfile:
+    insertafter: '^#DOCKER_OPTS'
+    dest: /etc/default/docker
+    line: DOCKER_OPTS="--experimental=true"
+  when: ansible_os_family == 'Debian'
+    and enable_experimental_mode
+
+- name: Disable experimental mode.
+  lineinfile:
+    dest: /etc/default/docker
+    state: absent
+    line: DOCKER_OPTS="--experimental=true"
+  when: ansible_os_family == 'Debian'
+    and not enable_experimental_mode
+
 - name: Enable the Docker daemon as a service and start it.
   service:
     name: docker
