@@ -74,6 +74,12 @@
   tags:
     - skip_ansible_lint # Suppressing the linter
 
+- name: Save Swarm worker token on a worker node
+  copy:
+    content: "{{ docker_worker_token.stdout }} {{ docker_manager_address }}"
+    dest: "/var/tmp/swarm_worker_token"
+  when: "'docker_swarm_worker' in group_names"
+
 - name: Join the pending Swarm manager nodes.
   shell: docker swarm join
         --listen-addr {{ docker_swarm_addr }}:{{ docker_swarm_port }}
